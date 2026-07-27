@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BatchRight, pilot preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+  :root{
+    --bg:#EAEDE0; --card:#FFFFFF; --primary:#24402B; --primaryDeep:#182C1E; --primaryLight:#DCE6DA;
+    --accent:#C97F1E; --accentDeep:#A8621A; --accentLight:#F5E3C6; --text:#1E231C; --muted:#6B7568; --line:#D8DACE;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background-color:var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased;
+    background-image: radial-gradient(rgba(36,64,43,0.06) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+  button { font-family: inherit; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .mono { font-family:'IBM Plex Mono', monospace; }
+  .muted { color:var(--muted); }
+  .small { font-size:12px; }
+  @media (prefers-reduced-motion: reduce) { .enterAnim { animation:none !important; } }
+
+  .wrap { max-width: 620px; margin:0 auto; padding: 22px 16px 40px; }
+
+  .headerRow { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .brand { display:flex; align-items:center; gap:10px; }
+  .logo { width:38px; height:38px; border-radius:10px; background: var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow: 0 2px 6px rgba(36,64,43,0.35); }
+  .brandName { font-family:'Fraunces', serif; font-weight:600; font-size:21px; line-height:1.1; letter-spacing:-0.01em; }
+  .badge { font-size:10px; font-weight:600; color:var(--accent); background:var(--accentLight); padding:2px 8px; border-radius:999px; margin-left:8px; }
+  .tagline { font-size:11px; color:var(--muted); margin-top:2px; }
+  .cityBar { display:flex; align-items:center; gap:10px; }
+  .pillGroup { display:flex; background:var(--card); border:1px solid var(--line); border-radius:999px; padding:3px; }
+  .pillBtn { border:none; cursor:pointer; background:transparent; font-size:13px; font-weight:500; padding:6px 14px; border-radius:999px; color:var(--text); transition: background 0.15s ease, color 0.15s ease; }
+  .pillBtn.active { background:var(--primary); color:#fff; }
+
+  .explainer { font-size:13px; line-height:1.55; margin-bottom:4px; }
+  .plantLine { font-size:12px; color:var(--muted); margin-bottom:14px; }
+  .segmentRow { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:18px; }
+  .segmentLabel { font-size:12px; color:var(--muted); font-weight:500; }
+
+  #hero { transition: opacity 0.2s ease; }
+  .heroTopRow { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .heroLabel { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--accent); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+  /* small, quiet, top-right, on purpose: this is a supporting number, not the headline. Matches the bottom stat card's green/dark-text combo for consistency and readability. */
+  .savedBadge { font-family:'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; font-size:11px; font-weight:700; color:var(--primary); background:var(--primaryLight); padding:5px 10px; border-radius:8px; white-space:nowrap; }
+  .heroName { font-size:16px; font-weight:500; }
+  .heroNumberRow { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:6px; }
+  /* ledger-style tabular numerals: precise and trustworthy rather than decorative. Small enough to read comfortably, bold enough to still anchor the card. */
+  .heroNumber { font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:clamp(24px, 5vw, 30px); line-height:1; font-variant-numeric: tabular-nums; letter-spacing:-0.01em; }
+  .unit { font-size:18px; color:var(--muted); font-family:'IBM Plex Sans',sans-serif; }
+  .heroStatusText { font-size:11px; color:var(--accent); min-height:14px; margin-top:6px; }
+  .heroReason { font-size:13px; margin-top:14px; }
+  .heroMeta { font-size:11px; color:var(--muted); margin-top:4px; }
+  .heroPrice { font-size:11px; color:var(--muted); margin-top:8px; }
+
+  .rowIdentity { display:flex; align-items:center; gap:10px; min-width:0; }
+  .iconBadge { box-shadow: inset 0 0 0 1px rgba(30,35,28,0.05); }
+
+  .stepper { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+  .stepBtn { width:34px; height:34px; border-radius:8px; border:none; cursor:pointer; background:var(--bg); font-size:16px; display:inline-flex; align-items:center; justify-content:center; transition:background 0.15s ease; }
+  .stepBtn:active { transform: scale(0.94); }
+
+  /* signature gauge: chip + stem + gradient track, hero only */
+  .gauge { position:relative; height:66px; margin-top:24px; }
+  .gaugeChip { position:absolute; top:0; transform:translateX(-50%); background: var(--accent); color:#2A1D08; font-family:'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; font-weight:600; font-size:12px; padding:4px 9px; border-radius:7px; white-space:nowrap; }
+  .gaugeChip:after { content:""; position:absolute; left:50%; bottom:-4px; transform:translateX(-50%); width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent; border-top:4px solid var(--accent); }
+  .gaugeStem { position:absolute; top:24px; height:11px; width:2px; background: var(--accent); transform:translateX(-1px); }
+  .gaugeTrack { position:absolute; top:35px; left:0; right:0; height:9px; border-radius:999px; background: var(--line); }
+  .gaugeRange { position:absolute; top:0; bottom:0; border-radius:999px; background: linear-gradient(90deg, var(--accentDeep), var(--accent)); }
+  .gaugeLabels { position:absolute; top:50px; left:0; right:0; display:flex; justify-content:space-between; font-size:11px; color:var(--muted); }
+  .confCaption { font-size:11px; color:var(--muted); margin-top:8px; line-height:1.4; }
+
+  .chartBox { margin-top:14px; }
+  .chartLegend { display:flex; flex-wrap:wrap; gap:14px; margin-top:8px; font-size:10.5px; color:var(--muted); }
+  .chartLegend span { display:flex; align-items:center; gap:5px; }
+  .legendSwatch { width:10px; height:10px; display:inline-block; flex-shrink:0; }
+  .legendDash { width:14px; height:0; border-top:2px dashed #C97F1E; }
+
+  @keyframes riseIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
+  .enterAnim { animation: riseIn 0.4s ease both; }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:14px; box-shadow: 0 1px 2px rgba(30,35,28,0.05), 0 8px 20px rgba(30,35,28,0.05); }
+  .dashed { border-style:dashed; text-align:center; box-shadow:none; }
+
+  .row { padding:15px 4px; border-top:1px solid var(--line); border-left:3px solid transparent; cursor:pointer; padding-left:12px; transition: border-left-color 0.2s ease, background 0.15s ease; border-radius:0 8px 8px 0; }
+  .row:first-child { border-top:none; }
+  .row.active { background:#F7F8F2; }
+  .row:hover { background:#F7F8F2; }
+  .rowTop { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .rowName { font-size:14px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rowReason { font-size:11px; color:var(--muted); margin-top:9px; margin-bottom:9px; }
+  .rowStepVal { font-family:'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; font-size:14px; min-width:58px; text-align:right; }
+
+  .confWrap { margin-top:0; }
+  .confTrack { position:relative; background:var(--line); border-radius:999px; }
+  .confRange { position:absolute; top:0; bottom:0; background:var(--accentLight); border-radius:999px; }
+  .confMarker { position:absolute; width:4px; background:var(--primary); border-radius:2px; }
+  .confLabels { display:flex; justify-content:space-between; margin-top:6px; font-size:11px; color:var(--muted); }
+
+  .listHead { display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+  .chev { transition:transform 0.15s; color:var(--muted); }
+  .chev.open { transform:rotate(90deg); }
+  .listGrid { display:grid; grid-template-columns:1.3fr 1fr 1.1fr; font-size:12px; padding:8px 6px; border-top:1px solid var(--line); border-radius:6px; }
+  .listGrid:nth-child(even) { background: rgba(216,218,206,0.3); }
+  .listGridHead { display:grid; grid-template-columns:1.3fr 1fr 1.1fr; font-size:11px; color:var(--muted); padding:0 6px 6px; }
+
+  .statsRow { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .statCard { flex:1; min-width:180px; border-radius:14px; padding:18px; box-shadow: 0 1px 2px rgba(30,35,28,0.05), 0 8px 20px rgba(30,35,28,0.05); }
+  .statCard.primary { background:var(--primaryLight); }
+  .statCard.plain { background:var(--card); border:1px solid var(--line); }
+  .statLabel { font-size:12px; font-weight:500; }
+  .statNumber { font-family:'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; font-weight:600; font-size:25px; margin-top:4px; }
+  .statMoney { font-weight:700; color:var(--accent); font-size:16px; margin-top:6px; font-family:'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+  .statSub { font-size:11px; margin-top:4px; opacity:0.85; }
+
+  .proofLine { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); margin-bottom:16px; padding:8px 12px; background:var(--card); border:1px solid var(--line); border-radius:999px; width:fit-content; }
+  .proofDot { width:6px; height:6px; border-radius:999px; background:var(--accent); flex-shrink:0; }
+  .placeholder { color:var(--accent); background:var(--accentLight); padding:0 4px; border-radius:4px; font-weight:600; }
+
+  .quoteCard { display:flex; flex-direction:column; gap:14px; }
+  .quoteItem { font-size:13px; line-height:1.5; font-style:italic; }
+  .quoteAttr { font-size:11px; color:var(--muted); font-style:normal; margin-top:5px; }
+
+  .microNote { font-size:11px; color:var(--muted); line-height:1.5; margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
+
+  .ctaTitle { font-size:13px; font-weight:600; margin-bottom:4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="headerRow">
+    <div class="brand">
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EAF0E6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V11"/><path d="M12 14C9 14 7 12 6 8c4 0 6 3 6 6Z"/><path d="M12 12c3 0 5-2 6-6-4 0-6 3-6 6Z"/><path d="M6 21h12"/></svg>
+      </div>
+      <div>
+        <span class="brandName">BatchRight</span><span class="badge">Pilot preview</span>
+        <div class="tagline">Order the right amount, every day.</div>
+      </div>
+    </div>
+    <div class="cityBar">
+      <div class="pillGroup" id="pillGroup"></div>
+      <div class="small mono muted">Mon, 27 Jul 2026</div>
+    </div>
+  </div>
+
+  <div class="explainer">What this is: BatchRight tells any foodservice or food-processing business how much raw material to buy every day, with a confidence range and a plain-language reason, instead of a guess. Press + or minus on any item, the number and the dot on the chart move together.</div>
+  <div class="proofLine"><span class="proofDot"></span>2 Bengaluru hotel and catering owners have verbally accepted to move forward with an LOI, one invited us in to see their kitchen. 3 more said they'd try it once it's live.</div>
+  <div class="plantLine" id="plantLine"></div>
+
+  <div class="segmentRow">
+    <span class="segmentLabel">Business type</span>
+    <div class="pillGroup" id="segmentGroup"></div>
+  </div>
+
+  <div class="card" id="hero"></div>
+  <div class="card enterAnim" id="skuList" style="animation-delay:0.05s;"></div>
+
+  <div class="card enterAnim" id="listingsCard" style="animation-delay:0.1s;">
+    <div class="listHead" onclick="toggleListings()">
+      <div>
+        <div style="font-size:14px; font-weight:500;" id="listingsTitle"></div>
+        <div class="small muted" id="listingsSource" style="margin-top:2px;"></div>
+      </div>
+      <span class="chev" id="listingsChev">&#8250;</span>
+    </div>
+    <div id="listingsBody"></div>
+  </div>
+
+  <div class="card quoteCard enterAnim" style="animation-delay:0.13s;">
+    <div class="quoteItem">&ldquo;We order raw material off assumption and experience, not data &mdash; and spoilage is what worries us most.&rdquo;
+      <div class="quoteAttr">&mdash; said independently, in almost the same words, by both owners who verbally accepted to move forward with an LOI (hotel and catering, Bengaluru)</div>
+    </div>
+    <div class="microNote">That's the gap BatchRight is built for: a quantity with a stated confidence range instead of a guess built on habit.</div>
+  </div>
+
+  <div class="statsRow enterAnim" id="footerStats" style="animation-delay:0.15s;"></div>
+
+  <div class="card enterAnim" style="animation-delay:0.2s;">
+    <div class="ctaTitle">2 Bengaluru hotels and caterers on board for the first batch &mdash; join the next one</div>
+    <div class="small" style="line-height:1.5;">This is a pilot preview, not a fully live, self-serve product yet, orders are still confirmed with each partner by hand. If you run a hotel, restaurant, cloud kitchen, or food processor in Bengaluru or Mumbai, we're onboarding a small next batch, free, in exchange for feedback.</div>
+  </div>
+
+</div>
+
+<script>
+// ---------- inverse normal CDF (Acklam's approximation) ----------
+function invNorm(p){
+  var a=[-3.969683028665376e1,2.209460984245205e2,-2.759285104469687e2,1.383577518672690e2,-3.066479806614716e1,2.506628277459239e0];
+  var b=[-5.447609879822406e1,1.615858368580409e2,-1.556989798598866e2,6.680131188771972e1,-1.328068155288572e1];
+  var c=[-7.784894002430293e-3,-3.223964580411365e-1,-2.400758277161838e0,-2.549732539343734e0,4.374664141464968e0,2.938163982698783e0];
+  var d=[7.784695709041462e-3,3.224671290700398e-1,2.445134137142996e0,3.754408661907416e0];
+  var plow=0.02425, phigh=1-plow, q, r;
+  if(p<plow){ q=Math.sqrt(-2*Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  else if(p<=phigh){ q=p-0.5; r=q*q; return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1); }
+  else { q=Math.sqrt(-2*Math.log(1-p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+}
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+var REDUCED_MOTION = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+// ---------- simple original flat icons per item (no external images, nothing to fail to load) ----------
+var ICON_BG = { mango:"#FBE3C0", spinach:"#DCEBD1", carrot:"#FBE0C9", cucumber:"#DEEBD9", pineapple:"#F5E7C4", onion:"#F3E6EE", tomato:"#FBDAD3", potato:"#EFE3D0" };
+var ICONS = {
+  mango: '<ellipse cx="20" cy="23" rx="11" ry="14" fill="#E8A33D" transform="rotate(-20 20 23)"/><path d="M17 10 q3 -5 7 -3" stroke="#4C7A3D" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
+  spinach: '<path d="M20 33 C14 27 12 18 18 11 C20 18 20 26 20 33 Z" fill="#3F6B3F"/><path d="M20 33 C26 27 28 18 22 11 C20 18 20 26 20 33 Z" fill="#5B8C4B"/><path d="M20 33 L20 7" stroke="#2F5233" stroke-width="2" stroke-linecap="round"/>',
+  carrot: '<path d="M20 35 L13 15 Q20 10 27 15 Z" fill="#D97B29"/><path d="M16 15 Q13 7 10 5 M20 15 Q20 6 20 3 M24 15 Q27 7 30 5" stroke="#4C7A3D" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
+  cucumber: '<rect x="11" y="7" width="18" height="27" rx="9" fill="#5B8C4B"/><line x1="16" y1="11" x2="16" y2="30" stroke="#8FB877" stroke-width="2" stroke-linecap="round"/><line x1="24" y1="11" x2="24" y2="30" stroke="#8FB877" stroke-width="2" stroke-linecap="round"/>',
+  pineapple: '<ellipse cx="20" cy="25" rx="10" ry="12" fill="#C79A45"/><path d="M12 19 L28 31 M12 31 L28 19 M12 25 L28 25" stroke="#A9822F" stroke-width="1.3"/><path d="M20 13 L15 4 M20 13 L20 1 M20 13 L25 4" stroke="#4C7A3D" stroke-width="3" fill="none" stroke-linecap="round"/>',
+  onion: '<ellipse cx="20" cy="24" rx="10" ry="12" fill="#B57EDC"/><path d="M13 20 Q20 15 27 20" stroke="#9A63BE" stroke-width="1.5" fill="none"/><path d="M20 12 L17 4 M20 12 L23 4" stroke="#4C7A3D" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
+  tomato: '<circle cx="20" cy="23" r="12" fill="#D9483A"/><ellipse cx="16" cy="17" rx="3" ry="2" fill="#E8695D" opacity="0.6"/><path d="M20 11 L16 6 M20 11 L20 4 M20 11 L24 6" stroke="#4C7A3D" stroke-width="2.5" fill="none" stroke-linecap="round"/>',
+  potato: '<ellipse cx="20" cy="22" rx="13" ry="10" fill="#C4966A" transform="rotate(-8 20 22)"/><circle cx="15" cy="20" r="1.3" fill="#9C7249"/><circle cx="24" cy="24" r="1.3" fill="#9C7249"/><circle cx="20" cy="17" r="1.1" fill="#9C7249"/>'
+};
+function iconBadge(id, size){
+  var bg = ICON_BG[id] || "#EEE";
+  var shape = ICONS[id] || "";
+  var inner = Math.round(size*0.68);
+  return '<div class="iconBadge" style="width:'+size+'px; height:'+size+'px; border-radius:999px; background:'+bg+'; display:flex; align-items:center; justify-content:center; flex-shrink:0;">'
+    + '<svg width="'+inner+'" height="'+inner+'" viewBox="0 0 40 40">'+shape+'</svg>'
+    + '</div>';
+}
+
+// ---------- business types: same engine, different raw materials, inspired by foodforecast's sector-tab pattern ----------
+var SEGMENTS = { processor: "Food processor", kitchen: "Restaurant / cloud kitchen" };
+
+// ---------- data: real mandi/HOPCOMS-style prices, illustrative usage volumes ----------
+var CITIES = {
+  bengaluru: {
+    label: "Bengaluru",
+    sourceNote: "Bengaluru wholesale market, 27 Jul 2026",
+    listings: [
+      {name:"Onion",mandi:31,retailLow:35,retailHigh:42},
+      {name:"Tomato",mandi:28,retailLow:32,retailHigh:39},
+      {name:"Potato",mandi:26,retailLow:29,retailHigh:35},
+      {name:"Carrot",mandi:61,retailLow:67,retailHigh:80},
+      {name:"Cucumber",mandi:31,retailLow:34,retailHigh:41},
+      {name:"Spinach",mandi:20,retailLow:22,retailHigh:26},
+      {name:"Mango",mandi:56,retailLow:64,retailHigh:74},
+      {name:"Pineapple",mandi:37,retailLow:42,retailHigh:48}
+    ],
+    segments: {
+      processor: {
+        plant: "Whitefield processing unit, Bengaluru",
+        items: [
+          {id:"mango",name:"Alphonso mango",unit:"kg",price:56,perishable:1.2,baseMean:210,std:34,reason:"Mango season tapering, wholesale arrivals thinning",confidence:"Medium, seasonal transition adds uncertainty"},
+          {id:"spinach",name:"Baby spinach",unit:"kg",price:20,perishable:1.2,baseMean:58,std:12,reason:"Tracks the last few weeks closely",confidence:"High, stable recent pattern"},
+          {id:"carrot",name:"Carrot",unit:"kg",price:61,perishable:0.6,baseMean:135,std:20,reason:"Stable weekday demand, holds well in storage",confidence:"High, long shelf life, low volatility"},
+          {id:"cucumber",name:"Cucumber",unit:"kg",price:31,perishable:1.0,baseMean:108,std:19,reason:"Slight uptick likely, warm and humid pre-monsoon days",confidence:"High, consistent local arrivals"},
+          {id:"pineapple",name:"Pineapple",unit:"kg",price:37,perishable:1.0,baseMean:88,std:17,reason:"In line with usual mid-week demand",confidence:"Medium, quality grade varies across arrivals"}
+        ]
+      },
+      kitchen: {
+        plant: "MG Road cloud kitchen and restaurant partners, Bengaluru",
+        items: [
+          {id:"onion",name:"Onion",unit:"kg",price:31,perishable:0.4,baseMean:70,std:12,reason:"Base for most gravies, steady daily use",confidence:"High, consistent demand across the week"},
+          {id:"tomato",name:"Tomato",unit:"kg",price:28,perishable:1.3,baseMean:55,std:16,reason:"Monsoon supply swings, watch closely this week",confidence:"Medium, price volatility adds uncertainty"},
+          {id:"potato",name:"Potato",unit:"kg",price:26,perishable:0.3,baseMean:60,std:10,reason:"Long shelf life, safe to stock a little ahead",confidence:"High, low spoilage risk"},
+          {id:"spinach",name:"Spinach",unit:"kg",price:20,perishable:1.2,baseMean:25,std:7,reason:"Used across gravies and sides, moderate turnover",confidence:"High, stable recent pattern"},
+          {id:"cucumber",name:"Cucumber",unit:"kg",price:31,perishable:1.0,baseMean:30,std:8,reason:"Salads and raita, ticks up on weekends",confidence:"High, consistent local arrivals"}
+        ]
+      }
+    }
+  },
+  mumbai: {
+    label: "Mumbai",
+    sourceNote: "Mumbai mandi / Vashi APMC reporting, 27 Jul 2026",
+    listings: [
+      {name:"Onion",mandi:33,retailLow:37,retailHigh:44},
+      {name:"Tomato",mandi:31,retailLow:35,retailHigh:42},
+      {name:"Potato",mandi:29,retailLow:32,retailHigh:38},
+      {name:"Carrot",mandi:64,retailLow:71,retailHigh:84},
+      {name:"Cucumber",mandi:33,retailLow:36,retailHigh:43},
+      {name:"Spinach",mandi:25,retailLow:28,retailHigh:33},
+      {name:"Mango",mandi:62,retailLow:70,retailHigh:82},
+      {name:"Pineapple",mandi:38,retailLow:43,retailHigh:49}
+    ],
+    segments: {
+      processor: {
+        plant: "Andheri processing unit, Mumbai",
+        items: [
+          {id:"mango",name:"Mango",unit:"kg",price:62,perishable:1.2,baseMean:150,std:30,reason:"Season tapering, mandi arrivals thinning fast",confidence:"Medium, seasonal transition adds uncertainty"},
+          {id:"spinach",name:"Spinach",unit:"kg",price:25,perishable:1.3,baseMean:62,std:18,reason:"Monsoon rains disrupting leafy-green supply lines",confidence:"Low-medium, high day-to-day volatility this month"},
+          {id:"carrot",name:"Carrot",unit:"kg",price:64,perishable:0.6,baseMean:130,std:21,reason:"Stable weekday demand, holds well in storage",confidence:"High, long shelf life, low volatility"},
+          {id:"cucumber",name:"Cucumber",unit:"kg",price:33,perishable:1.0,baseMean:100,std:18,reason:"Steady arrivals from the Shahapur-Karjat belt",confidence:"High, consistent supply corridor"},
+          {id:"pineapple",name:"Pineapple",unit:"kg",price:38,perishable:1.0,baseMean:80,std:20,reason:"Wide quality-grade spread in today's arrivals",confidence:"Medium, grade variation across lots"}
+        ]
+      },
+      kitchen: {
+        plant: "Andheri cloud kitchen and restaurant partners, Mumbai",
+        items: [
+          {id:"onion",name:"Onion",unit:"kg",price:33,perishable:0.4,baseMean:75,std:13,reason:"Base for most gravies, steady daily use",confidence:"High, consistent demand across the week"},
+          {id:"tomato",name:"Tomato",unit:"kg",price:31,perishable:1.3,baseMean:58,std:17,reason:"Monsoon supply swings, demand steady through the week",confidence:"Medium, price volatility adds uncertainty"},
+          {id:"potato",name:"Potato",unit:"kg",price:29,perishable:0.3,baseMean:65,std:11,reason:"Long shelf life, safe to stock a little ahead",confidence:"High, low spoilage risk"},
+          {id:"spinach",name:"Spinach",unit:"kg",price:25,perishable:1.3,baseMean:22,std:8,reason:"Monsoon rains disrupting leafy-green supply lines",confidence:"Low-medium, high day-to-day volatility this month"},
+          {id:"cucumber",name:"Cucumber",unit:"kg",price:33,perishable:1.0,baseMean:28,std:7,reason:"Salads and raita, steady arrivals from the Shahapur-Karjat belt",confidence:"High, consistent supply corridor"}
+        ]
+      }
+    }
+  }
+};
+
+function buildItem(item, idx){
+  var rand = mulberry32(1000 + idx*37 + item.price);
+  var mean = item.baseMean;
+  var spoilCost = item.price * item.perishable;
+  var stockoutCost = item.price * 1.3;
+  var critRatio = stockoutCost/(stockoutCost+spoilCost);
+  var recommended = Math.max(0, mean + item.std*invNorm(critRatio));
+  var low = Math.max(0, mean + item.std*invNorm(0.12));
+  var high = mean + item.std*invNorm(0.88);
+  var naiveOrder = mean + 1.6*item.std;
+
+  var history = [];
+  var d;
+  for(d=-13; d<=0; d++){
+    var weekday = ((d % 7) + 7) % 7;
+    var weekdayFactor = (weekday===0 || weekday===6) ? 0.85 : 1.05;
+    var noise = (rand()-0.5) * item.std * 0.9;
+    history.push({day:d, actual: Math.round(mean*weekdayFactor+noise), range:null, rec:null});
+  }
+  for(d=1; d<=7; d++){
+    history.push({day:d, actual:null, range:[Math.round(low), Math.round(high)], rec: Math.round(recommended)});
+  }
+  var out = {};
+  for(var k in item) out[k]=item[k];
+  out.mean=mean; out.recommended=recommended; out.low=low; out.high=high;
+  out.naiveOrder=naiveOrder; out.spoilCost=spoilCost; out.stockoutCost=stockoutCost;
+  out.history=history;
+  return out;
+}
+
+// ---------- state ----------
+var cityId = "bengaluru";
+var segmentId = "processor";
+var items = [];
+var itemById = {};
+var selectedId = null;
+var status = {};
+var currentValue = {};
+var heroChartParts = null;
+var listingsOpen = false;
+var activeAnim = {};
+
+function pctInRange(dispMin, dispMax, v){ return ((v-dispMin)/(dispMax-dispMin))*100; }
+
+function confBarHTML(low, val, high, unit, compact, markerId){
+  var dispMin = low*0.85, dispMax = high*1.15;
+  var pl = pctInRange(dispMin,dispMax,low), pv = pctInRange(dispMin,dispMax,val), ph = pctInRange(dispMin,dispMax,high);
+  var h = compact ? 6 : 8;
+  var idAttr = markerId ? (' id="'+markerId+'"') : '';
+  var labels = compact ? "" : ('<div class="confLabels"><span class="mono">'+Math.round(low)+' '+unit+'</span><span class="mono">'+Math.round(high)+' '+unit+'</span></div>');
+  return '<div class="confWrap"><div class="confTrack" style="height:'+h+'px;">'
+    + '<div class="confRange" style="left:'+pl+'%; width:'+(ph-pl)+'%;"></div>'
+    + '<div class="confMarker"'+idAttr+' style="left:calc('+pv+'% - 2px); top:-3px; height:'+(h+6)+'px;"></div>'
+    + '</div>' + labels + '</div>';
+}
+
+function heroGaugeHTML(low, val, high, unit){
+  var dispMin = low*0.85, dispMax = high*1.15;
+  var pl = pctInRange(dispMin,dispMax,low), pv = pctInRange(dispMin,dispMax,val), ph = pctInRange(dispMin,dispMax,high);
+  return '<div class="gauge">'
+    + '<div class="gaugeChip" id="heroGaugeChip" style="left:'+pv+'%;">'+Math.round(val)+' '+unit+'</div>'
+    + '<div class="gaugeStem" id="heroGaugeStem" style="left:'+pv+'%;"></div>'
+    + '<div class="gaugeTrack"><div class="gaugeRange" style="left:'+pl+'%; width:'+(ph-pl)+'%;"></div></div>'
+    + '<div class="gaugeLabels"><span class="mono">'+Math.round(low)+' '+unit+'</span><span class="mono">'+Math.round(high)+' '+unit+'</span></div>'
+    + '</div>';
+}
+
+function buildChartParts(history){
+  var n = history.length;
+  var plotLeft = 42, plotRight = 604, plotTop = 20, plotBottom = 118;
+  var xStep = (plotRight - plotLeft) / (n - 1);
+  var vals = [];
+  history.forEach(function(h){ if(h.actual!=null) vals.push(h.actual); if(h.range){ vals.push(h.range[0]); vals.push(h.range[1]); } });
+  var vMin = Math.min.apply(null, vals) * 0.85, vMax = Math.max.apply(null, vals) * 1.15;
+  function yOf(v){ return plotBottom - ((v - vMin)/(vMax - vMin)) * (plotBottom - plotTop); }
+  function xOf(i){ return plotLeft + i*xStep; }
+  var actualPts=[], bandTop=[], bandBottom=[], recPts=[];
+  history.forEach(function(h,i){
+    var x = xOf(i);
+    if(h.actual!=null) actualPts.push([x, yOf(h.actual)]);
+    if(h.range){ bandTop.push([x, yOf(h.range[1])]); bandBottom.push([x, yOf(h.range[0])]); recPts.push([x, yOf(h.rec)]); }
+  });
+  function pathOf(pts){ return pts.map(function(p,i){ return (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1); }).join(' '); }
+  var bandPath = pathOf(bandTop) + ' ' + bandBottom.slice().reverse().map(function(p){ return 'L'+p[0].toFixed(1)+','+p[1].toFixed(1); }).join(' ') + ' Z';
+  var day1Index = n - 7;
+  var todayX = xOf(day1Index - 0.5);
+  var gridLines = [vMin, (vMin+vMax)/2, vMax].map(function(v){ return { y: yOf(v), label: Math.round(v) }; });
+  return {
+    bandPath: bandPath, actualPath: pathOf(actualPts), recPath: pathOf(recPts), yOf: yOf,
+    day1X: xOf(day1Index), todayX: todayX,
+    plotLeft: plotLeft, plotRight: plotRight, plotTop: plotTop, plotBottom: plotBottom,
+    gridLines: gridLines
+  };
+}
+
+function axisSVG(parts, unit){
+  var s = "";
+  parts.gridLines.forEach(function(g){
+    s += '<line x1="'+parts.plotLeft+'" y1="'+g.y.toFixed(1)+'" x2="'+parts.plotRight+'" y2="'+g.y.toFixed(1)+'" stroke="#E4E6DA" stroke-width="1"/>';
+    s += '<text x="'+(parts.plotLeft-6).toFixed(1)+'" y="'+(g.y+3).toFixed(1)+'" font-size="9" font-family="IBM Plex Mono, monospace" fill="#8A9083" text-anchor="end">'+g.label+'</text>';
+  });
+  s += '<text x="'+parts.plotLeft+'" y="132" font-size="9" font-family="IBM Plex Mono, monospace" fill="#8A9083" text-anchor="start">2 wks ago</text>';
+  s += '<text x="'+parts.plotRight+'" y="132" font-size="9" font-family="IBM Plex Mono, monospace" fill="#8A9083" text-anchor="end">+7 days</text>';
+  s += '<text x="'+(parts.plotLeft+2).toFixed(1)+'" y="10" font-size="8" font-family="IBM Plex Sans, sans-serif" fill="#8A9083">kg/day</text>';
+  return s;
+}
+
+function renderPills(){
+  var html = "";
+  Object.keys(CITIES).forEach(function(id){
+    html += '<button class="pillBtn '+(id===cityId?'active':'')+'" onclick="switchCity(\''+id+'\')">'+CITIES[id].label+'</button>';
+  });
+  document.getElementById('pillGroup').innerHTML = html;
+}
+
+function renderSegments(){
+  var html = "";
+  Object.keys(SEGMENTS).forEach(function(id){
+    html += '<button class="pillBtn '+(id===segmentId?'active':'')+'" onclick="switchSegment(\''+id+'\')">'+SEGMENTS[id]+'</button>';
+  });
+  document.getElementById('segmentGroup').innerHTML = html;
+  document.getElementById('plantLine').textContent = CITIES[cityId].segments[segmentId].plant;
+}
+
+function renderHero(){
+  var sel = itemById[selectedId] || items[0];
+  var parts = buildChartParts(sel.history);
+  heroChartParts = parts;
+  var val = currentValue[sel.id];
+  var markerY = parts.yOf(val);
+  var heroEl = document.getElementById('hero');
+  heroEl.style.opacity = '0';
+  heroEl.innerHTML =
+    '<div class="heroTopRow"><div class="heroLabel">&#10024; Today\'s priority recommendation</div><div class="savedBadge" id="heroSavedBadge">0 kg saved/week</div></div>'
+    + '<div class="rowIdentity" style="margin-bottom:12px;">'+iconBadge(sel.id,50)+'<div class="heroName">'+sel.name+'</div></div>'
+    + '<div class="heroNumberRow">'
+      + '<div class="heroNumber"><span id="heroNumberVal">'+Math.round(val)+'</span> <span class="unit">'+sel.unit+'</span></div>'
+      + '<div class="stepper">'
+        + '<button class="stepBtn" onclick="stepValue(\''+sel.id+'\',-5)" aria-label="Decrease">&minus;</button>'
+        + '<button class="stepBtn" onclick="stepValue(\''+sel.id+'\',5)" aria-label="Increase">+</button>'
+      + '</div>'
+    + '</div>'
+    + '<div class="heroStatusText" id="heroStatusText">'+(status[sel.id]==='adjusted' ? 'Adjusted from recommended' : '')+'</div>'
+    + '<div class="heroReason">'+sel.reason+'</div>'
+    + '<div class="heroMeta">Confidence: '+sel.confidence+'</div>'
+    + '<div class="heroPrice mono">Mandi price today: Rs '+sel.price+'/'+sel.unit+'</div>'
+    + heroGaugeHTML(sel.low, val, sel.high, sel.unit)
+    + '<div class="confCaption">Predicted range for the week ahead, the chip shows your current order.</div>'
+    + '<div class="chartBox"><svg viewBox="0 0 620 145" preserveAspectRatio="none" style="width:100%; height:150px; display:block;">'
+        + axisSVG(parts, sel.unit)
+        + '<line x1="'+parts.todayX.toFixed(1)+'" y1="'+parts.plotTop+'" x2="'+parts.todayX.toFixed(1)+'" y2="'+parts.plotBottom+'" stroke="#CBCDBF" stroke-width="1" stroke-dasharray="3 3"/>'
+        + '<text x="'+(parts.todayX+5).toFixed(1)+'" y="'+(parts.plotTop+10).toFixed(1)+'" font-size="9" font-family="IBM Plex Mono, monospace" fill="#8A9083">Today</text>'
+        + '<path d="'+parts.bandPath+'" fill="#DCE6DA" stroke="none"/>'
+        + '<path d="'+parts.actualPath+'" fill="none" stroke="#24402B" stroke-width="2.5"/>'
+        + '<path d="'+parts.recPath+'" fill="none" stroke="#C97F1E" stroke-width="2" stroke-dasharray="6 5" opacity="0.5"/>'
+        + '<circle id="heroMarkerDot" cx="'+parts.day1X.toFixed(1)+'" cy="'+markerY.toFixed(1)+'" r="5" fill="#C97F1E" stroke="#fff" stroke-width="1.5"/>'
+        + '<text id="heroMarkerLabel" x="'+(parts.day1X+10).toFixed(1)+'" y="'+(markerY-8).toFixed(1)+'" font-size="12" font-family="IBM Plex Mono, monospace" font-weight="600" fill="#1E231C">'+Math.round(val)+'</text>'
+      + '</svg></div>'
+      + '<div class="chartLegend"><span><span class="legendSwatch" style="background:#24402B;"></span>Actual usage, last 2 weeks</span><span><span class="legendSwatch" style="background:#DCE6DA;"></span>Predicted range, week ahead</span><span><span class="legendSwatch legendDash"></span>Model\'s recommended trend</span><span><span class="legendSwatch" style="background:#C97F1E; border-radius:50%;"></span>Your order for today, moves as you adjust</span></div>';
+  requestAnimationFrame(function(){ heroEl.style.opacity='1'; });
+}
+
+function rowHTML(item){
+  var st = status[item.id];
+  var val = currentValue[item.id];
+  var borderColor = st==='adjusted' ? 'var(--accent)' : 'transparent';
+  return '<div class="row '+(item.id===selectedId?'active':'')+'" id="row-'+item.id+'" style="border-left-color:'+borderColor+';" onclick="selectItem(\''+item.id+'\')">'
+    + '<div class="rowTop">'
+      + '<div class="rowIdentity">'+iconBadge(item.id,40)+'<div class="rowName">'+item.name+'</div></div>'
+      + '<div class="stepper" onclick="event.stopPropagation()">'
+        + '<button class="stepBtn" onclick="stepValue(\''+item.id+'\',-5)" aria-label="Decrease">&minus;</button>'
+        + '<span class="rowStepVal" id="qty-'+item.id+'">'+Math.round(val)+' '+item.unit+'</span>'
+        + '<button class="stepBtn" onclick="stepValue(\''+item.id+'\',5)" aria-label="Increase">+</button>'
+      + '</div>'
+    + '</div>'
+    + '<div class="rowReason">'+item.reason+'</div>'
+    + confBarHTML(item.low, val, item.high, item.unit, true, 'marker-'+item.id)
+    + '</div>';
+}
+
+function renderSkuList(){
+  document.getElementById('skuList').innerHTML = items.map(rowHTML).join('');
+}
+
+function renderListings(){
+  var c = CITIES[cityId];
+  document.getElementById('listingsTitle').textContent = "Today's market listings, " + c.label;
+  document.getElementById('listingsSource').textContent = c.sourceNote;
+  document.getElementById('listingsChev').className = 'chev' + (listingsOpen ? ' open' : '');
+  if(!listingsOpen){ document.getElementById('listingsBody').innerHTML = ''; return; }
+  var html = '<div class="listGridHead"><div>Item</div><div>Mandi</div><div>Retail</div></div>';
+  c.listings.forEach(function(l){
+    html += '<div class="listGrid"><div>'+l.name+'</div><div class="mono">Rs '+l.mandi+'/kg</div><div class="mono muted">Rs '+l.retailLow+'-'+l.retailHigh+'</div></div>';
+  });
+  document.getElementById('listingsBody').innerHTML = html;
+}
+
+function computeFooterTotals(){
+  var totalWasteKg = 0, totalSavings = 0;
+  items.forEach(function(i){
+    var val = currentValue[i.id];
+    var wasteKg = Math.max(0, i.naiveOrder - val) * 5;
+    totalWasteKg += wasteKg;
+    totalSavings += wasteKg * i.spoilCost;
+  });
+  return { kg: Math.round(totalWasteKg/5)*5, rs: Math.round(totalSavings) };
+}
+
+function renderFooterSkeleton(){
+  document.getElementById('footerStats').innerHTML =
+    '<div class="statCard primary"><div class="statLabel" style="color:var(--primary);">Estimated waste avoided this week</div>'
+    + '<div class="statNumber" id="footerKg" style="color:var(--primary);"></div>'
+    + '<div class="statMoney" id="footerRs"></div>'
+    + '<div class="statSub" style="color:var(--primary);">based on today\'s adjusted quantities</div></div>'
+    + '<div class="statCard plain"><div class="statLabel muted">How this is calculated</div>'
+    + '<div class="small" style="margin-top:6px; line-height:1.5;">Spoilage and rush-buy costs are derived from today\'s real mandi price per item. Demand ranges use illustrative usage volumes, a real deployment learns these from each plant\'s own logs.</div></div>';
+}
+
+function updateFooterNumbers(){
+  var totals = computeFooterTotals();
+  var kgEl = document.getElementById('footerKg');
+  var rsEl = document.getElementById('footerRs');
+  if(kgEl) kgEl.textContent = totals.kg + ' kg';
+  if(rsEl) rsEl.textContent = 'Rs ' + totals.rs.toLocaleString('en-IN') + ' saved';
+  var heroSavedEl = document.getElementById('heroSavedBadge');
+  if(heroSavedEl) heroSavedEl.textContent = totals.kg + ' kg saved/week';
+}
+
+// ---------- smooth, JS-driven animation (no reliance on CSS transitions for SVG attrs) ----------
+function applyValueToUI(id, item, val){
+  var qtyEl = document.getElementById('qty-'+id);
+  if(qtyEl) qtyEl.textContent = Math.round(val)+' '+item.unit;
+  var markerEl = document.getElementById('marker-'+id);
+  if(markerEl){
+    var dm=item.low*0.85, dx=item.high*1.15;
+    markerEl.style.left = 'calc('+pctInRange(dm,dx,val)+'% - 2px)';
+  }
+  if(id===selectedId){
+    var heroNumEl = document.getElementById('heroNumberVal');
+    if(heroNumEl) heroNumEl.textContent = Math.round(val);
+    var dm2=item.low*0.85, dx2=item.high*1.15;
+    var pv = pctInRange(dm2,dx2,val);
+    var chip = document.getElementById('heroGaugeChip');
+    if(chip){ chip.style.left = pv+'%'; chip.textContent = Math.round(val)+' '+item.unit; }
+    var stem = document.getElementById('heroGaugeStem');
+    if(stem){ stem.style.left = pv+'%'; }
+    if(heroChartParts){
+      var y = heroChartParts.yOf(val);
+      var dot = document.getElementById('heroMarkerDot');
+      var label = document.getElementById('heroMarkerLabel');
+      if(dot) dot.setAttribute('cy', y.toFixed(1));
+      if(label){ label.setAttribute('y', (y-8).toFixed(1)); label.textContent = Math.round(val); }
+    }
+  }
+}
+
+function easeOutCubic(t){ return 1 - Math.pow(1-t, 3); }
+
+function animateValue(id, item, from, to){
+  if(activeAnim[id]) cancelAnimationFrame(activeAnim[id]);
+  var duration = REDUCED_MOTION ? 1 : 260;
+  var start = null;
+  function frame(ts){
+    if(start===null) start = ts;
+    var t = Math.min(1, (ts-start)/duration);
+    var val = from + (to-from)*easeOutCubic(t);
+    currentValue[id] = val;
+    applyValueToUI(id, item, val);
+    updateFooterNumbers();
+    if(t<1){ activeAnim[id] = requestAnimationFrame(frame); }
+    else { currentValue[id] = to; delete activeAnim[id]; }
+  }
+  activeAnim[id] = requestAnimationFrame(frame);
+}
+
+function setRowStatusStyle(id){
+  var rowEl = document.getElementById('row-'+id);
+  if(rowEl) rowEl.style.borderLeftColor = status[id]==='adjusted' ? 'var(--accent)' : 'transparent';
+  if(id===selectedId){
+    var st = document.getElementById('heroStatusText');
+    if(st) st.textContent = status[id]==='adjusted' ? 'Adjusted from recommended' : '';
+  }
+}
+
+function renderAll(){
+  renderPills();
+  renderSegments();
+  renderHero();
+  renderSkuList();
+  renderListings();
+  renderFooterSkeleton();
+  updateFooterNumbers();
+}
+
+function loadData(){
+  var segData = CITIES[cityId].segments[segmentId];
+  items = segData.items.map(buildItem);
+  itemById = {};
+  items.forEach(function(i){ itemById[i.id] = i; });
+  selectedId = items[0].id;
+  status = {};
+  currentValue = {};
+  items.forEach(function(i){ currentValue[i.id] = i.recommended; });
+  activeAnim = {};
+  renderAll();
+}
+
+// ---------- event handlers (called from inline onclick) ----------
+function switchCity(id){ cityId = id; loadData(); }
+function switchSegment(id){ segmentId = id; loadData(); }
+function selectItem(id){ selectedId = id; renderHero(); renderSkuList(); }
+function stepValue(id, delta){
+  var item = itemById[id];
+  var from = currentValue[id];
+  var to = Math.max(0, from + delta);
+  status[id] = 'adjusted';
+  setRowStatusStyle(id);
+  animateValue(id, item, from, to);
+}
+function toggleListings(){ listingsOpen = !listingsOpen; renderListings(); }
+
+loadData();
+</script>
+</body>
+</html>
