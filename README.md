@@ -21,21 +21,8 @@ This is a pilot preview, not a finished product. Orders are still confirmed by h
 
 We'd rather say this plainly than let it look more finished than it is.
 
-## How to view it
-
-Open `index.html` in any browser. Nothing to install, no server, no account. The whole app runs in that one file.
-
-## Files in this repo
-
-- `index.html` — the app. GitHub Pages loads this file automatically.
-- `batchright.html` — the same file, kept under its working name too.
-- `README.md` — this file.
-
-## Built with
-
-Plain HTML, CSS, and JavaScript. No frameworks, no backend, no database. Fonts are loaded from Google Fonts.
-
 ## Contact
 
 Run a hotel, restaurant, cloud kitchen, or food processor in Bengaluru or Mumbai and want to try it? 
+
 Email **[kumarkiran.kg@gmail.com](mailto:kumarkiran.kg@gmail.com)**.
