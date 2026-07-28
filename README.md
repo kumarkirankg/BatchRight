@@ -6,7 +6,7 @@ BatchRight tells restaurants, hotels, catering businesses, and food processors h
 
 Add your link here once GitHub Pages is turned on:
 
-`https://YOUR-USERNAME.github.io/YOUR-REPO-NAME/`
+`[https://your-username.github.io/batchright/]`
 
 ## Where things stand
 
