@@ -25,4 +25,4 @@ We'd rather say this plainly than let it look more finished than it is.
 
 Run a hotel, restaurant, cloud kitchen, or food processor in Bengaluru or Mumbai and want to try it? 
 
-Email - **[kumarkiran.kg@gmail.com](mailto:kumarkiran.kg@gmail.com)**.
+Email - **[kumarkiran.kg@gmail.com](mailto:kumarkiran.kg@gmail.com)**
