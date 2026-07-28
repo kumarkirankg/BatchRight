@@ -4,9 +4,7 @@ BatchRight tells restaurants, hotels, catering businesses, and food processors h
 
 ## Live demo
 
-Add your link here once GitHub Pages is turned on:
-
-`[https://your-username.github.io/batchright]`
+**[Open BatchRight](https://kumarkirankg.github.io/BatchRight/)**
 
 ## Where things stand
 
@@ -39,4 +37,4 @@ Plain HTML, CSS, and JavaScript. No frameworks, no backend, no database. Fonts a
 
 ## Contact
 
-Run a hotel, restaurant, cloud kitchen, or food processor in Bengaluru or Mumbai and want to try it? Add your email or contact link here.
+Run a hotel, restaurant, cloud kitchen, or food processor in Bengaluru or Mumbai and want to try it? Email **[kumarkiran.kg@gmail.com](mailto:kumarkiran.kg@gmail.com)**.
