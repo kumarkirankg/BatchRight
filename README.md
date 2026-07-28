@@ -4,7 +4,7 @@ BatchRight tells restaurants, hotels, catering businesses, and food processors h
 
 ## Live demo
 
-**[Visit BatchRight](https://kumarkirankg.github.io/BatchRight/)**
+👉 **[Visit BatchRight](https://kumarkirankg.github.io/BatchRight/)**
 
 ## Where things stand
 
