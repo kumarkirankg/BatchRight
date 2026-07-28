@@ -12,7 +12,7 @@ This is a pilot preview, not a finished product. Orders are still confirmed by h
 
 - 2 hotel and catering owners in Bengaluru have verbally agreed to an LOI. Both said almost the same thing, without prompting: they currently order based on assumption and experience, not data, and spoilage is their biggest worry.
 - One of them invited us to come see their kitchen.
-- 3 more said they'd try it once it's live.
+- 3 more said they will try it once it's live.
 
 ## What's real and what's illustrative
 
@@ -37,4 +37,5 @@ Plain HTML, CSS, and JavaScript. No frameworks, no backend, no database. Fonts a
 
 ## Contact
 
-Run a hotel, restaurant, cloud kitchen, or food processor in Bengaluru or Mumbai and want to try it? Email **[kumarkiran.kg@gmail.com](mailto:kumarkiran.kg@gmail.com)**.
+Run a hotel, restaurant, cloud kitchen, or food processor in Bengaluru or Mumbai and want to try it? 
+Email **[kumarkiran.kg@gmail.com](mailto:kumarkiran.kg@gmail.com)**.
